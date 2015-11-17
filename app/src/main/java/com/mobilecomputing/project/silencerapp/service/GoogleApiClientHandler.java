@@ -13,6 +13,11 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
+import com.mobilecomputing.project.silencerapp.model.MyPlaceLikelihood;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class GoogleApiClientHandler extends Service
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -34,6 +39,7 @@ public class GoogleApiClientHandler extends Service
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
+            getCurrentPlace();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -47,11 +53,16 @@ public class GoogleApiClientHandler extends Service
             result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
                 @Override
                 public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
+                    List<MyPlaceLikelihood> myPlaceLikelihoodList = new ArrayList<MyPlaceLikelihood>();
                     for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                        MyPlaceLikelihood myPlaceLikelihood = new MyPlaceLikelihood();
+                        myPlaceLikelihood.setPlaceLikelihood(placeLikelihood);
+                        myPlaceLikelihoodList.add(myPlaceLikelihood);
                         Log.i(TAG, String.format("Place '%s' has likelihood: %g",
                                 placeLikelihood.getPlace().getName(),
                                 placeLikelihood.getLikelihood()));
                     }
+                    Collections.sort(myPlaceLikelihoodList);
                     likelyPlaces.release();
                 }
             });

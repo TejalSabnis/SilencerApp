@@ -2,6 +2,7 @@ package com.mobilecomputing.project.silencerapp.activity;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import com.mobilecomputing.project.silencerapp.R;
 import com.mobilecomputing.project.silencerapp.dto.DataTransfer;
 import com.mobilecomputing.project.silencerapp.model.UserLocation;
+import com.mobilecomputing.project.silencerapp.service.GoogleApiClientHandler;
 
 import java.util.Date;
 
@@ -32,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
             Intent startServiceIntent = new Intent(this, StartupService.class);
             startService(startServiceIntent);
         }*/
+
+        Intent GAPIHandlerServiceIntent = new Intent(this, GoogleApiClientHandler.class);
+        startService(GAPIHandlerServiceIntent);
 
         /*StartupService startupService = new StartupService(MainActivity.this);
         Location location = startupService.getLocation();
