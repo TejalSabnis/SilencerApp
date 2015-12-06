@@ -22,12 +22,9 @@ public class StartupService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Intent GAPIHandlerServiceIntent = new Intent(this, GoogleApiClientHandler.class);
+        startService(GAPIHandlerServiceIntent);
         Log.d(TAG, "onCreate ");
-
-        /*while(true)
-        {
-            Log.d(TAG, "onCreate service is running");
-        }*/
     }
 
     @Override

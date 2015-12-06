@@ -8,28 +8,31 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
-import com.mobilecomputing.project.silencerapp.model.MyPlaceLikelihood;
+import com.mobilecomputing.project.silencerapp.dto.DataTransfer;
+import com.mobilecomputing.project.silencerapp.model.MyPlace;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GoogleApiClientHandler extends Service
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     public GoogleApiClientHandler() {
+
     }
 
     private static final String TAG = "GoogleApiClientHandler";
 
+    private TagLocation tagLocation;
+    private MyTimerTask myTimerTask;
+    private DataTransfer dbHelper;
     private GoogleApiClient mGoogleApiClient;
 
     @Override
     public void onCreate() {
+
         super.onCreate();
         try {
             mGoogleApiClient = new GoogleApiClient
@@ -39,7 +42,9 @@ public class GoogleApiClientHandler extends Service
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
-            getCurrentPlace();
+            dbHelper = new DataTransfer(this);
+            tagLocation = new TagLocation(dbHelper);
+            myTimerTask = new MyTimerTask();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -47,8 +52,16 @@ public class GoogleApiClientHandler extends Service
     }
 
     public void getCurrentPlace() {
+        Log.d(TAG, "getCurrentPlace started at: "+ new Date(System.currentTimeMillis()));
         try {
-            PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+            Place place = new MyPlace();
+            tagLocation.tagLocation(place);
+            if (MyPlace.counter >= 5) {
+                Log.d(TAG, "getCurrentPlace cancelling timer task");
+                myTimerTask.timer.cancel();
+                tagLocation.getInformation();
+            }
+            /*PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
                     .getCurrentPlace(mGoogleApiClient, null);
             result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
                 @Override
@@ -58,14 +71,15 @@ public class GoogleApiClientHandler extends Service
                         MyPlaceLikelihood myPlaceLikelihood = new MyPlaceLikelihood();
                         myPlaceLikelihood.setPlaceLikelihood(placeLikelihood);
                         myPlaceLikelihoodList.add(myPlaceLikelihood);
-                        Log.i(TAG, String.format("Place '%s' has likelihood: %g",
+                        Log.d(TAG, String.format("Place '%s' has likelihood: %g",
                                 placeLikelihood.getPlace().getName(),
                                 placeLikelihood.getLikelihood()));
                     }
                     Collections.sort(myPlaceLikelihoodList);
+                    tagLocation.tagLocation(myPlaceLikelihoodList.get(myPlaceLikelihoodList.size()-1).getPlaceLikelihood().getPlace());
                     likelyPlaces.release();
                 }
-            });
+            });*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -106,5 +120,20 @@ public class GoogleApiClientHandler extends Service
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    class MyTimerTask extends TimerTask {
+
+        public MyTimerTask() {
+            timer = new Timer();
+            timer.schedule(this, 0, 10*1000); //30*60*1000
+        }
+
+        private Timer timer;
+
+        @Override
+        public void run() {
+            getCurrentPlace();
+        }
     }
 }

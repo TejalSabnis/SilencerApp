@@ -3,7 +3,6 @@ package com.mobilecomputing.project.silencerapp.activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,10 +11,7 @@ import android.view.MenuItem;
 
 import com.mobilecomputing.project.silencerapp.R;
 import com.mobilecomputing.project.silencerapp.dto.DataTransfer;
-import com.mobilecomputing.project.silencerapp.model.UserLocation;
-import com.mobilecomputing.project.silencerapp.service.GoogleApiClientHandler;
-
-import java.util.Date;
+import com.mobilecomputing.project.silencerapp.service.StartupService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,13 +26,12 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate started");
 
-        /*if(!isServiceRunning(StartupService.class)) {
+        testDb();
+
+        if(!isServiceRunning(StartupService.class)) {
             Intent startServiceIntent = new Intent(this, StartupService.class);
             startService(startServiceIntent);
-        }*/
-
-        Intent GAPIHandlerServiceIntent = new Intent(this, GoogleApiClientHandler.class);
-        startService(GAPIHandlerServiceIntent);
+        }
 
         /*StartupService startupService = new StartupService(MainActivity.this);
         Location location = startupService.getLocation();
@@ -75,7 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void testDb()
     {
-        UserLocation userLocation1 = new UserLocation();
+        dbHelper = new DataTransfer(this);
+
+        /*UserLocation userLocation1 = new UserLocation();
         userLocation1.setDayOfWeek("Thursday");
         userLocation1.setStartTime(new Date(System.currentTimeMillis()));
         userLocation1.setEndTime(new Date(System.currentTimeMillis()));
@@ -93,11 +90,14 @@ public class MainActivity extends AppCompatActivity {
         loc.setLongitude(40.00);
         userLocation.setLoc(loc);
 
-
-        dbHelper = new DataTransfer(this);
         dbHelper.putInformation(userLocation1);
         dbHelper.putInformation(userLocation);
-        dbHelper.getInformation();
+        dbHelper.getInformation();*/
+
+        dbHelper.dropTable();
+        dbHelper.createTable();
+        dbHelper.dropCurrentLocationTable();
+        dbHelper.createCurrentLocationTable();
     }
 
     public boolean isServiceRunning(Class<?> serviceClass) {

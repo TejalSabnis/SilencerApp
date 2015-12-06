@@ -2,7 +2,6 @@ package com.mobilecomputing.project.silencerapp.model;
 
 import android.location.Location;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +22,10 @@ public class UserLocation {
     }
 
     private Location loc;
-    private Date startTime;
-    private Date endTime;
+    private Long startTime;
+    private Long endTime;
     private String dayOfWeek;
+    private String placeName;
 
     public Location getLoc() {
         return loc;
@@ -35,19 +35,19 @@ public class UserLocation {
         this.loc = loc;
     }
 
-    public Date getStartTime() {
+    public Long getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Date startTime) {
+    public void setStartTime(Long startTime) {
         this.startTime = startTime;
     }
 
-    public Date getEndTime() {
+    public Long getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Date endTime) {
+    public void setEndTime(Long endTime) {
         this.endTime = endTime;
     }
 
@@ -57,5 +57,13 @@ public class UserLocation {
 
     public void setDayOfWeek(String dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
+    }
+
+    public String getPlaceName() {
+        return placeName;
+    }
+
+    public void setPlaceName(String placeName) {
+        this.placeName = placeName;
     }
 }
