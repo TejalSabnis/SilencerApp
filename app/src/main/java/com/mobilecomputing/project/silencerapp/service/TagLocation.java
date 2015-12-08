@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.android.gms.location.places.Place;
 import com.mobilecomputing.project.silencerapp.dto.DataTransfer;
 import com.mobilecomputing.project.silencerapp.model.PlaceBean;
+import com.mobilecomputing.project.silencerapp.model.Silencer;
 import com.mobilecomputing.project.silencerapp.model.UserLocation;
 
 import java.util.Calendar;
@@ -30,10 +31,20 @@ public class TagLocation extends Service {
     private DataTransfer dbHelper;
 
     public void tagLocation(Place place) {
-        //Log.d(TAG, "tagLocation: currentPlace id: "+currentPlace.getId());
+        List<UserLocation> userLocs = dbHelper.getInformation();
         currentPlace = dbHelper.getCurrentLocation();
         if (currentPlace == null) {
             if (isUniversity(place)) {
+                UserLocation userLocation = isLocExisting(userLocs, place);
+                if (userLocation != null) {
+                    Silencer.putSilentOn(userLocation);
+                    if (userLocation.getConfidence() < 3) {
+                        Log.d(TAG, "tagLocation : updating confidence for"+userLocation.getRecId());
+                        dbHelper.updateConfidence(userLocation);
+                    }
+                }
+                else
+                    Silencer.putSilentOn();
                 updateCurrentPlace(place);
             }
         } else {
@@ -46,9 +57,31 @@ public class TagLocation extends Service {
                     updateCurrentPlace(place);
                 } else {
                     dbHelper.deleteCurrentLocation();
+                    Silencer.putSilentOff();
                 }
             }
         }
+    }
+
+    public UserLocation isLocExisting(List<UserLocation> userLocs, Place place) {
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date(System.currentTimeMillis());
+        cal.setTime(date);
+        int dayInt = cal.get(Calendar.DAY_OF_WEEK);
+        for(UserLocation userLocation : userLocs){
+            if (userLocation.getPlaceName().equals(place.getName().toString())) {
+                Log.d(TAG, "isLocExisting : names are equal");
+                Date locDate = new Date(userLocation.getStartTime());
+                long diff = date.getTime() - locDate.getTime();
+                if (UserLocation.daysOfWeek.get(dayInt).equals(userLocation.getDayOfWeek())
+                        && diff < 30*60*1000) {
+                    Log.d(TAG, "isLocExisting : returned: "+userLocation.getRecId());
+                    return userLocation;
+                }
+            }
+        }
+        Log.d(TAG, "isLocExisting : returned null");
+        return null;
     }
 
     public boolean isUniversity(Place place) {
@@ -73,6 +106,7 @@ public class TagLocation extends Service {
         userLocation.setEndTime(System.currentTimeMillis());
         userLocation.setLoc(location);
         userLocation.setPlaceName(place.getPlaceName());
+        userLocation.setConfidence(1);
         return userLocation;
     }
 

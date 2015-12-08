@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import com.mobilecomputing.project.silencerapp.model.PlaceBean;
@@ -34,6 +35,7 @@ public class DataTransfer extends SQLiteOpenHelper{
     public static final String START_TIME = "start_time";
     public static final String END_TIME = "end_time";
     public static final String DAY = "day";
+    public static final String CONFIDENCE = "confidence";
     public static final String PLACE_NAME = "place_name";
     public static final String PLACE_ID = "place_id";
 
@@ -75,6 +77,7 @@ public class DataTransfer extends SQLiteOpenHelper{
                     " start_time integer," +
                     " end_time integer," +
                     " day text," +
+                    " confidence integer," +
                     " place_name text )");
 
             Log.d(TAG, "createTable user_locations created successfully");
@@ -107,6 +110,7 @@ public class DataTransfer extends SQLiteOpenHelper{
         cv.put(END_TIME, userLocation.getEndTime());
         cv.put(DAY, userLocation.getDayOfWeek());
         cv.put(PLACE_NAME, userLocation.getPlaceName());
+        cv.put(CONFIDENCE, userLocation.getConfidence());
         long k = db.insert(USER_LOCATIONS, null, cv);
         Log.d(TAG, "putInformation() returned " +k+ "successful insert");
     }
@@ -121,13 +125,24 @@ public class DataTransfer extends SQLiteOpenHelper{
         Cursor res = db.rawQuery("select * from user_locations", null);
         res.moveToFirst();
         while(res.isAfterLast() == false){
-            Log.d(TAG, "LATITUDE: "+ res.getString(res.getColumnIndex(LATITUDE)));
-            Log.d(TAG, "LONGITUDE: "+ res.getString(res.getColumnIndex(LONGITUDE)));
-            Log.d(TAG, "START_TIME: "+ new Date(res.getLong(res.getColumnIndex(START_TIME))));
-            Log.d(TAG, "END_TIME: "+ new Date(res.getLong(res.getColumnIndex(END_TIME))));
-            Log.d(TAG, "DAY: "+ res.getString(res.getColumnIndex(DAY)));
-            Log.d(TAG, "PLACE_NAME: "+ res.getString(res.getColumnIndex(PLACE_NAME)));
-            Log.d(TAG, "REC_ID: "+ res.getString(res.getColumnIndex(REC_ID)));
+            UserLocation userLocation = new UserLocation();
+            userLocation.setDayOfWeek(res.getString(res.getColumnIndex(DAY)));
+            userLocation.setStartTime(res.getLong(res.getColumnIndex(START_TIME)));
+            userLocation.setEndTime(res.getLong(res.getColumnIndex(END_TIME)));
+            userLocation.setPlaceName(res.getString(res.getColumnIndex(PLACE_NAME)));
+            userLocation.setConfidence(res.getInt(res.getColumnIndex(CONFIDENCE)));
+            userLocation.setRecId(res.getInt(res.getColumnIndex(REC_ID)));
+            userLocs.add(userLocation);
+
+            Log.d(TAG, "LATITUDE: " + res.getString(res.getColumnIndex(LATITUDE)));
+            Log.d(TAG, "LONGITUDE: " + res.getString(res.getColumnIndex(LONGITUDE)));
+            Log.d(TAG, "START_TIME: " + new Date(res.getLong(res.getColumnIndex(START_TIME))));
+            Log.d(TAG, "END_TIME: " + new Date(res.getLong(res.getColumnIndex(END_TIME))));
+            Log.d(TAG, "DAY: " + res.getString(res.getColumnIndex(DAY)));
+            Log.d(TAG, "PLACE_NAME: " + res.getString(res.getColumnIndex(PLACE_NAME)));
+            Log.d(TAG, "CONFIDENCE: " + res.getInt(res.getColumnIndex(CONFIDENCE)));
+            Log.d(TAG, "REC_ID: " + res.getString(res.getColumnIndex(REC_ID)));
+
             res.moveToNext();
         }
 
@@ -139,19 +154,21 @@ public class DataTransfer extends SQLiteOpenHelper{
         Cursor res = db.rawQuery("delete * from user_locations", null);
     }
 
+    public void updateConfidence(UserLocation userLocation) {
+        int confidence = userLocation.getConfidence();
+        confidence++;
+        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteStatement stmt = db.compileStatement("UPDATE user_locations SET confidence=? where rec_id=?");
+        stmt.bindLong(1, confidence);
+        stmt.bindLong(2, userLocation.getRecId());
+        stmt.execute();
+        Log.d(TAG, "updateConfidence() completed successfully");
+    }
+
     public List<UserLocation> mapData(Cursor res)
     {
         List<UserLocation> userLocs = new ArrayList<UserLocation>();
 
-        res.moveToFirst();
-        while(res.isAfterLast() == false){
-            UserLocation userLocation = new UserLocation();
-            userLocation.setDayOfWeek(res.getString(res.getColumnIndex(DAY)));
-            //userLocation.setStartTime();
-            //userLocation.setEndTime();
-            //userLocation.setLoc(new Location(res.getDouble(res.getColumnIndex(LATITUDE)), res.getDouble(res.getColumnIndex(LONGITUDE))));
-            res.moveToNext();
-        }
 
         return userLocs;
     }
@@ -187,8 +204,7 @@ public class DataTransfer extends SQLiteOpenHelper{
         }
     }
 
-    public void putCurrentLocation(PlaceBean currentPlace)
-    {
+    public void putCurrentLocation(PlaceBean currentPlace) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(LATITUDE, currentPlace.getLatitude());

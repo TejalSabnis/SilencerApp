@@ -26,6 +26,8 @@ public class UserLocation {
     private Long endTime;
     private String dayOfWeek;
     private String placeName;
+    private Integer confidence;
+    private Integer recId;
 
     public Location getLoc() {
         return loc;
@@ -65,5 +67,21 @@ public class UserLocation {
 
     public void setPlaceName(String placeName) {
         this.placeName = placeName;
+    }
+
+    public Integer getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(Integer confidence) {
+        this.confidence = confidence;
+    }
+
+    public Integer getRecId() {
+        return recId;
+    }
+
+    public void setRecId(Integer recId) {
+        this.recId = recId;
     }
 }

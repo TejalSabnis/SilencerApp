@@ -27,10 +27,10 @@ public class MyPlace implements Place {
                 return "id1";
             }
             case 2: {
-                return "id1";
+                return "id2";
             }
             case 3: {
-                return "id2";
+                return "id1";
             }
             case 4: {
                 return "id2";
@@ -91,10 +91,10 @@ public class MyPlace implements Place {
                 return "name1";
             }
             case 2: {
-                return "name1";
+                return "name2";
             }
             case 3: {
-                return "name2";
+                return "name1";
             }
             case 4: {
                 return "name2";
@@ -115,10 +115,10 @@ public class MyPlace implements Place {
                 return new LatLng(1,1);
             }
             case 2: {
-                return new LatLng(1,1);
+                return new LatLng(2,2);
             }
             case 3: {
-                return new LatLng(2,2);
+                return new LatLng(1,1);
             }
             case 4: {
                 return new LatLng(2,2);
