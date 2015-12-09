@@ -1,8 +1,11 @@
 package com.mobilecomputing.project.silencerapp.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.util.Log;
 
 public class StartupService extends Service {
@@ -11,6 +14,9 @@ public class StartupService extends Service {
     }
 
     private static final String TAG = "StartupService";
+
+    public static AudioManager mode;
+    public static Vibrator vibrator;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -22,6 +28,8 @@ public class StartupService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mode = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         Intent GAPIHandlerServiceIntent = new Intent(this, GoogleApiClientHandler.class);
         startService(GAPIHandlerServiceIntent);
         Log.d(TAG, "onCreate ");
